@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+
+{% block title %}Create an Account{% endblock %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<h1>Register</h1>
+    <form method="POST" class="form-group">
+		{% csrf_token %}
+		{{ form|crispy }}
+        <button class="btn btn-primary" type="submit">Register</button>
+    </form>
+<p class="text-center">If you already have an account, <a href="/login/">login</a> instead.</p>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends 'SerShip/layout.html' %}
+
+{% block content %}  
+<div class="input-group mb-3"> <!-- the search item button -->
+    <input type="text" id="searchInput" class="form-control" placeholder="Search items">
+    <div class="input-group-append">
+        <button class="btn btn-primary" type="button" onclick="searchByName()">Search</button>
+    </div>
+</div>
+
+<div>
+    <input type="number" id="priceInput" class="form-control" placeholder="Enter price"> <!-- the price filtering button that needs the user to first search item to show the red prices or not -->
+    <button class="btn btn-primary" type="button" onclick="filterByPrice()">Filter by Price</button>
+    <span style="margin-left: 5px; color: #999;">(Note: The price will turn red if the amount entered is below the item price!)</span>
+</div>
+
+    <br><br>
+    <h2>ITEMS</h2>
+  
+    {% for category in categories %}
+    <div class="accordion" id="category-{{ category.id }}">
+        <div class="card">
+            <div class="card-header" id="heading-{{ category.id }}">
+                <h2 class="mb-0">
+                    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse-{{ category.id }}" aria-expanded="true" aria-controls="collapse-{{ category.id }}">
+                        {{ category.hardwareType }}
+                    </button>
+                </h2>
+            </div>
+
+            <div id="collapse-{{ category.id }}" class="collapse" aria-labelledby="heading-{{ category.id }}" data-parent="#category-{{ category.id }}">
+                <div class="card-body">
+                    {% for subcategory in subcategories %}
+                        {% if subcategory.Type == category %}
+                        <div class="accordion" id="subcategory-{{ subcategory.id }}">
+                            <div class="card">
+                                <div class="card-header" id="subheading-{{ subcategory.id }}">
+                                    <h2 class="mb-0">
+                                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#subcollapse-{{ subcategory.id }}" aria-expanded="true" aria-controls="subcollapse-{{ subcategory.id }}">
+                                            {{ subcategory.categoryName }}
+                                        </button>
+                                    </h2>
+                                </div>
+                                <div id="subcollapse-{{ subcategory.id }}" class="collapse" aria-labelledby="subheading-{{ subcategory.id }}" data-parent="#subcategory-{{ subcategory.id }}">
+                                    <div class="card-body">
+                                        {% for item in items %}
+                                            {% if item.SubType == subcategory %}
+                                            <p>item: <img src="{{ item.image.url }}" alt="{{ item.itemName }}" width="150px" height="150px"> {{ item.itemName }} - Price: <span class="item-price" data-price="{{ item.price }}">{{ item.price }} $</span></p>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <br><br>
+    <h2>Search Results</h2> 
+    <table>
+        <tbody id="searchResults"></tbody> <!-- the search results display -->
+    </table>
+    <br><br><br>
+
+    <script> // prefered to write the script here instead of putting in static (it was also not working)
+        function searchByName() { // search for items
+            var input, filter, items, i, itemName, resultHtml;
+            input = document.getElementById("searchInput");
+            filter = input.value.trim().toLowerCase();
+
+            if (filter !== "") {
+                items = document.querySelectorAll(".card-body p");
+
+                var foundItems = [];
+                for (i = 0; i < items.length; i++) {
+                    itemName = items[i].innerText.toLowerCase();
+                    if (itemName.indexOf(filter) > -1) {
+                        foundItems.push(items[i].outerHTML);
+                    }
+                }
+                var searchResultsContainer = document.getElementById("searchResults");
+                searchResultsContainer.innerHTML = foundItems.join("");
+            } else {
+                var searchResultsContainer = document.getElementById("searchResults");
+                searchResultsContainer.innerHTML = "";
+            }
+        }
+
+        function filterByPrice() { //filtering the price with red color
+            var priceInput, items, i, price;
+            priceInput = document.getElementById("priceInput");
+            var maxPrice = parseFloat(priceInput.value);
+
+            items = document.querySelectorAll("#searchResults p"); // Selecting the search results items
+
+            for (i = 0; i < items.length; i++) {
+                price = parseFloat(items[i].querySelector(".item-price").dataset.price);
+                var priceSpan = items[i].querySelector(".item-price");
+                if (isNaN(maxPrice) || price >= maxPrice) {
+                    priceSpan.style.color = "red"; // Applying the red color to the price if it's greater than or equal to the entered price
+                } else {
+                    priceSpan.style.color = ""; // To reset the price color to the default
+                }
+            }
+        }
+    </script>
+    
+{% endblock %}
